@@ -130,6 +130,13 @@ If you use `pi` (or similar harness tools):
    skey run mistral prod --env MISTRAL_API_KEY -y -- pi
    ```
 
+4. **Midst of an ongoing project session?**
+   If you are already inside a running `pi` session without `skey`:
+   - Exit `pi` cleanly: type `/quit`
+   - Relaunch wrapped in `skey run` with `--continue` to pick up exactly where you left off without losing session history:
+     ```sh
+     skey run mistral prod --env MISTRAL_API_KEY -- pi --continue
+     ```
 ## Honest box: is this secure? 🛡️
 
 No — it is hurdles, not a jail. It stops everyday accidents (sneaky `printenv`,

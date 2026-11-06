@@ -98,6 +98,8 @@ skey run mistral prod --env MISTRAL_API_KEY -y -- pi --help
 ```
 
 > Do NOT put `!skey get ...` in `pi` auth files. There is no screen to click "yes" on there, and `get` has no bypass. Wrap the whole `pi` start in `skey run` instead.
+>
+> **Midst of an ongoing session?** Exit quickly with `/quit`, then resume immediately with `skey run ... -- pi --continue` to preserve full conversational context.
 
 ### opencode harness
 
