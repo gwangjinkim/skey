@@ -1,15 +1,15 @@
 # skey — a treasure box for your secret keys 🔒
 
-Think of `skey` like a piggy bank for API keys.
+Think of `skey` like an OS-backed vault for API keys that keeps them away from snooping AI agents.
 
-- You drop a key in. It clicks shut.
-- Nobody can peek through the glass.
-- When a helper program needs the key, YOU open the box, just a crack, just for that one job.
-- A notebook writes down every open and close. So you can always check later.
+With AI coding tools and local open-source models running shell commands in developer environments, leaving raw credentials in `.env` files or export statements is an open door for silent exfiltration.
 
-That is all `skey` does. Keys live in your computer's own safe (macOS Keychain, Linux Secret Service, Windows Credential Manager). Never in shell history. Never in `.env` files. Never shown on screen by accident.
+`skey` replaces naked strings and targetable files:
+- **Keys live in your computer's native safe** (macOS Keychain, Linux Secret Service, Windows Credential Manager). Nothing in shell history, dotfiles, or `.env`.
+- **`get` always asks you first** via `/dev/tty` (`Allow access? [y/N]`) with zero `--yes` bypass.
+- **`run` lends the key without exposing it** (`skey run ... -- <cmd>`), injecting it into child memory and blacking it out (`[REDACTED]`) in output logs.
 
-Two apps, same box: **Go** (`skey-go/`) and **Rust** (`skey/`). Pick either one. They share everything.
+Two identical implementations, same safe: **Go** (`skey-go/`) and **Rust** (`skey/`). They share the same index, store, and commands.
 
 > New here? Read only the next section. It takes 30 seconds.
 

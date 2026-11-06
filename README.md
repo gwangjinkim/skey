@@ -1,30 +1,26 @@
-# skey — a treasure box for secret keys 🔒
+# skey — a treasure box for your secret keys 🔒
 
-Helpers like AI agents/bots can read your files. Even free, open-source models
-with shell tools can run `printenv` or `cat`. So never leave keys lying around.
+Look, grab a coffee and let's talk real for a second ☕.
+
+More and more developers are noticing something unsettling: AI coding agents — including popular open-source models running locally or through tools with shell execution — have a habit of snooping around your workspace. When an agent has bash tool access, one of the first things it or a rogue prompt can do is peek around: `cat .env`, inspect `~/.zshrc`, grep shell history, or dump `printenv`.
+
+If your API keys are lying around as naked strings, they're sitting ducks:
 
 ```sh
-# ❌ Don't do this — any person or tool that can read files can steal these
-API_KEY="sk-..."          # in ~/.zshrc / ~/.bashrc (history + ps can leak it)
-{ "key": "sk-..." }       # in auth.json (pi) — plain text on disk
-MY_KEY=sk-...             # in .env files — EVERY tool can read .env
+# ❌ Don't do this anymore — any agent or tool with shell access can grab these:
+API_KEY="sk-..."          # in ~/.zshrc or ~/.bashrc (leaks to history, child processes, and ps)
+{ "key": "sk-..." }       # in config files (e.g. auth.json) — plain text on disk
+MY_KEY=sk-...             # in .env files — literally the #1 target every prompt looks for
+export GLOBAL_KEY=sk-...  # global env vars — readable by every single spawned sub-process
 ```
 
-Why is that bad? Imagine your key is candy money. Anyone who opens the drawer
-can take it and spend it. That is what a file is: a drawer anyone can open.
+We built `skey` to kill off naked keys and `.env` files once and for all:
 
-`skey` is a piggy bank instead. You drop a key in, it clicks shut. When a
-helper needs the key, YOU open it just a crack, just for that one job.
+1. **No plaintext on disk**: Your keys are stored directly in your OS's native encrypted credential safe (macOS Keychain, Linux Secret Service, Windows Credential Manager).
+2. **Human gate on read**: If an LLM or script attempts to read the raw secret (`skey get`), `skey` halts and explicitly prompts **YOU** on `/dev/tty`: *Allow access? [y/N]*. There is intentionally no `--yes` bypass flag. An autonomous agent simply cannot hit "yes" behind your back.
+3. **Lend without seeing (`skey run`)**: When a program actually needs the key (like running a CLI, an automated test, or a curl command), `skey run` injects the key directly into that single child process's isolated memory, executes it without a shell, and automatically redacts the key from stdout and stderr output. The agent gets the job done without ever laying eyes on the plaintext secret.
 
-## Why the piggy bank is safer
-
-Keys live in your computer's own safe, not in files:
-
-- macOS Keychain, Linux Secret Service, Windows Credential Manager
-- Not a file, so `cat` / `printenv` on a file finds nothing
-- Each key has its own lock (per-entry access rules)
-- Nothing leaks into shell history, `ps`, or dotfiles
-
+That's the entire goal: hurdle accidental leaks, eliminate targetable `.env` files, and keep you in the loop whenever a key is touched.
 ## Two boxes, same piggy bank: Go and Rust
 
 `skey-go/` (Go) and `skey/` (Rust) share one safe and the same commands.
