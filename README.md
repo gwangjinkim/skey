@@ -33,15 +33,29 @@ from memory (zeroize), no garbage collector leaving key copies around, and
 stricter builds. Go is faster to change and experiment with. Pick Rust for
 maximum paranoia, Go for hacking. Same service name `skey`, same key list.
 
-## The whole trick (4 lines)
+## Installation
 
-Install one box (pick one line):
+Install either the Rust or Go version (both use the same commands and share the same OS-native vault):
 
+### Option 1: Rust (Recommended — published on crates.io)
 ```sh
-cd skey-go && go install .              # Go -> skey
-# or: cd skey && cargo install --path .   # Rust (or: cargo install skey)
+cargo install skey
+```
+*Or build from local source:*
+```sh
+cd skey && cargo install --path .
 ```
 
+### Option 2: Go
+```sh
+go install github.com/gwangjinkim/skey/skey-go@latest
+```
+*Or build from local source:*
+```sh
+cd skey-go && go install .
+```
+
+## The whole trick (4 lines)
 Then copy-paste:
 
 ```sh

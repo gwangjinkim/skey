@@ -18,14 +18,19 @@ Index: same path and JSON (`{"names": {name: [variants]}}`) as Go —
 `~/Library/Application Support/skey/index.json` (mac),
 `~/.config/skey/index.json` (linux), `%APPDATA%\skey\index.json` (win).
 
-## Install
+## Installation
 
+### From crates.io (Official Rust registry)
 ```sh
-cargo install skey               # from crates.io
-# or local:
-cd skey && cargo install --path .
+cargo install skey
 ```
+This places the `skey` binary directly onto your `PATH` (typically in `~/.cargo/bin`).
 
+### From local source
+```sh
+cd skey && cargo install --path .
+# or build release binary: cargo build --release  # binary at target/release/skey
+```
 Requires: Rust stable, plus the OS helper (`/usr/bin/security` on macOS,
 `secret-tool` from libsecret on Linux — nothing extra on Windows).
 

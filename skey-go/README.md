@@ -50,13 +50,23 @@ skey get mykey prod --yes      # ❌ always fails. By design.
 skey run mykey prod --env MY_KEY -y -- mycommand   # ✅ robots use this. Output still blacked out.
 ```
 
-## Install
+## Installation
 
-You need Go ≥ 1.21 **or** Rust (pick one, same box).
-
+### Via `go install`
 ```sh
-go install github.com/gwangjinkim/skey/skey-go@latest  # Go -> `skey` on PATH
-# or: cargo install skey                            # Rust from crates.io
+go install github.com/gwangjinkim/skey/skey-go@latest
+```
+*(Note: If building from a private repo, ensure `GOPRIVATE=github.com/gwangjinkim/*` is set in your environment).*
+
+### From local source
+```sh
+cd skey-go && go install .
+# or: go build -o skey .
+```
+
+### Or install the Rust twin from crates.io
+```sh
+cargo install skey
 ```
 
 Extra pieces per computer: macOS needs nothing (uses built-in `/usr/bin/security`). Linux needs `secret-tool` (`apt install libsecret-tools`). Windows needs nothing.
