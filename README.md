@@ -1,6 +1,6 @@
 # skey — a treasure box for secret keys 🔒
 
-Helpers like chat robots can read your files. Even free, open-source models
+Helpers like AI agents/bots can read your files. Even free, open-source models
 with shell tools can run `printenv` or `cat`. So never leave keys lying around.
 
 ```sh
@@ -69,8 +69,8 @@ Swap `MY_KEY` for the word your helper reads (`MISTRAL_API_KEY`, `OPENAI_API_KEY
 
 ## Two rules
 
-1. **`get` always asks.** There is no `--yes`. On purpose. A robot cannot click yes for you (prevents autonomous open-source agent exfiltration).
-2. **`run` is mittens mode.** The key goes straight into that one command's pocket, and the answer comes back with the key blacked out (`[REDACTED]`). Robots may add `-y`, but only for jobs YOU trust.
+1. **`get` always asks.** There is no `--yes`. On purpose. An agent/bot cannot click yes for you (prevents autonomous open-source agent exfiltration).
+2. **`run` is mittens mode.** The key goes straight into that one command's pocket, and the answer comes back with the key blacked out (`[REDACTED]`). Agents may add `-y`, but only for jobs YOU trust.
 
 ## Honest box: is this secure? 🛡️
 

@@ -28,7 +28,7 @@ What just happened:
 
 - `set` = put a key in the box. Give it a name (`mykey`) and a label (`prod`). Labels are free words: `prod`, `dev`, `test`.
 - `list` = read the labels on the box. Keys stay inside.
-- `get` = take a key out with your own hands. `skey` always asks `Allow access to mykey/prod? [y/N]`. There is NO skip button. On purpose. A robot cannot click "yes" for you here.
+- `get` = take a key out with your own hands. `skey` always asks `Allow access to mykey/prod? [y/N]`. There is NO skip button. On purpose. An agent/bot cannot click "yes" for you here.
 - `run` = let ONE command borrow the key. The key goes straight into that command's pocket (`--env MY_KEY`). Nothing else can see it. The answer comes back with the key blacked out (`[REDACTED]`).
 
 Two more words you will use:
@@ -42,12 +42,12 @@ Missing key? You get exit 1 plus a hint (`skey list` / `skey set …`).
 
 ## The only two rules (read this once)
 
-1. **`get` always asks.** No `--yes`. No bypass. If someone tells you to run `skey get --yes`, it will fail. That is the point. Humans click yes. Robots use `run`.
-2. **`run` is for robots.** It can skip the question with `-y`. It still blacks out the key in the output. Only use `-y` for jobs YOU trust.
+1. **`get` always asks.** No `--yes`. No bypass. If someone tells you to run `skey get --yes`, it will fail. That is the point. Humans click yes. Agents use `run`.
+2. **`run` is for agents.** It can skip the question with `-y`. It still blacks out the key in the output. Only use `-y` for jobs YOU trust.
 
 ```sh
 skey get mykey prod --yes      # ❌ always fails. By design.
-skey run mykey prod --env MY_KEY -y -- mycommand   # ✅ robots use this. Output still blacked out.
+skey run mykey prod --env MY_KEY -y -- mycommand   # ✅ agents use this. Output still blacked out.
 ```
 
 ## Installation
@@ -271,11 +271,10 @@ senv get mistral prod -n            # same key + newline at the end (-n/--newlin
 Every `get` and `run` — allowed AND denied — is written down INSIDE the program. No wrapper to sneak around. No keys in the notebook, ever.
 
 ```sh
-senv stats          # scoreboard: how often each key was used + who used it last
-senv log            # last 20 notebook lines, human-readable
-senv log -n 50      # last 50 lines
-senv log --json     # raw lines for robots (pipe to jq)
-```
+skey stats          # scoreboard: how often each key was used + who used it last
+skey log            # last 20 notebook lines, human-readable
+skey log -n 50      # last 50 lines
+skey log --json     # raw lines for agents/tools (pipe to jq)
 
 After a helper session, run `senv log` and you can answer: *who used which key, how, and when?*
 
