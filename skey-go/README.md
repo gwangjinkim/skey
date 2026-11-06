@@ -87,65 +87,65 @@ The key your helper needs decides the `--env` word. Pick your helper below. Copy
 `pi` uses whatever model you pick. Lend it that model's key.
 
 ```sh
-senv set mistral prod
-senv run mistral prod --env MISTRAL_API_KEY -- pi
+skey set mistral prod
+skey run mistral prod --env MISTRAL_API_KEY -- pi
 ```
 
 Hands-free version (only for jobs you trust, output still blacked out):
 
 ```sh
-senv run mistral prod --env MISTRAL_API_KEY -y -- pi --help
+skey run mistral prod --env MISTRAL_API_KEY -y -- pi --help
 ```
 
-> Do NOT put `!senv get ...` in `pi` auth files. There is no screen to click "yes" on there, and `get` has no bypass. Wrap the whole `pi` start in `senv run` instead.
+> Do NOT put `!skey get ...` in `pi` auth files. There is no screen to click "yes" on there, and `get` has no bypass. Wrap the whole `pi` start in `skey run` instead.
 
 ### opencode harness
 
 `opencode` reads keys from its environment. Lend it the one for your model.
 
 ```sh
-senv set anthropic prod
-senv run anthropic prod --env ANTHROPIC_API_KEY -- opencode
+skey set anthropic prod
+skey run anthropic prod --env ANTHROPIC_API_KEY -- opencode
 ```
 
 OpenAI flavor:
 
 ```sh
-senv set openai prod
-senv run openai prod --env OPENAI_API_KEY -- opencode
+skey set openai prod
+skey run openai prod --env OPENAI_API_KEY -- opencode
 ```
 
-> `opencode` can also read a config file. The box way is simpler: start it with `senv run` so it finds the key in its environment. No key files lying around.
+> `opencode` can also read a config file. The box way is simpler: start it with `skey run` so it finds the key in its environment. No key files lying around.
 
 ### claude code
 
 Claude Code wants `ANTHROPIC_API_KEY`. Lend it for one session:
 
 ```sh
-senv set anthropic prod
-senv run anthropic prod --env ANTHROPIC_API_KEY -- claude
+skey set anthropic prod
+skey run anthropic prod --env ANTHROPIC_API_KEY -- claude
 ```
 
-> Claude Code can also log in with a file. The box way above is simpler and leaves no key in any file. (Community-tested pattern: if your setup reads a login file, keep using the file for login and use `senv run` for the API key.)
+> Claude Code can also log in with a file. The box way above is simpler and leaves no key in any file. (Community-tested pattern: if your setup reads a login file, keep using the file for login and use `skey run` for the API key.)
 
 ### codex (OpenAI)
 
 Codex wants `OPENAI_API_KEY`. Same 2 lines:
 
 ```sh
-senv set openai prod
-senv run openai prod --env OPENAI_API_KEY -- codex
+skey set openai prod
+skey run openai prod --env OPENAI_API_KEY -- codex
 ```
 
-> Codex can also read `auth.json`. Do NOT put `senv get` inside `auth.json` (no screen to click yes on). Start Codex with `senv run` so the key arrives through the environment instead.
+> Codex can also read `auth.json`. Do NOT put `skey get` inside `auth.json` (no screen to click yes on). Start Codex with `skey run` so the key arrives through the environment instead.
 
 ### omp harness
 
 Same shape. Swap in the key word your `omp` setup reads. *(Community-tested pattern.)*
 
 ```sh
-senv set openai prod
-senv run openai prod --env OPENAI_API_KEY -- omp
+skey set openai prod
+skey run openai prod --env OPENAI_API_KEY -- omp
 ```
 
 ### deepseek harness
@@ -153,14 +153,14 @@ senv run openai prod --env OPENAI_API_KEY -- omp
 DeepSeek keys look like `sk-...` and the tool reads `DEEPSEEK_API_KEY`. *(Community-tested pattern.)*
 
 ```sh
-senv set deepseek prod
-senv run deepseek prod --env DEEPSEEK_API_KEY -- deepseek
+skey set deepseek prod
+skey run deepseek prod --env DEEPSEEK_API_KEY -- deepseek
 ```
 
 OpenAI-style endpoint flavor:
 
 ```sh
-senv run deepseek prod --env DEEPSEEK_API_KEY -- deepseek --help
+skey run deepseek prod --env DEEPSEEK_API_KEY -- deepseek --help
 ```
 
 ### antigravity (Google's agent IDE)
@@ -168,14 +168,14 @@ senv run deepseek prod --env DEEPSEEK_API_KEY -- deepseek --help
 Antigravity mostly logs in with your Google account, but tools around it (Gemini API calls) read `GEMINI_API_KEY` or `GOOGLE_API_KEY`. Lend one to a single command: *(Community-tested pattern.)*
 
 ```sh
-senv set gemini prod
-senv run gemini prod --env GEMINI_API_KEY -- my-agent-command
+skey set gemini prod
+skey run gemini prod --env GEMINI_API_KEY -- my-agent-command
 ```
 
 If your Antigravity flow is inside an editor you start from a terminal, start the editor itself through the box:
 
 ```sh
-senv run gemini prod --env GEMINI_API_KEY -- antigravity
+skey run gemini prod --env GEMINI_API_KEY -- antigravity
 ```
 
 ### Plain command-line programs (curl, python, anything)
@@ -183,19 +183,19 @@ senv run gemini prod --env GEMINI_API_KEY -- antigravity
 This is the superpower. ANY program that reads a key from the environment works. Two favorites:
 
 ```sh
-senv set mistral prod
-senv run mistral prod --env MISTRAL_API_KEY -- curl -s https://api.mistral.ai/v1/models \
+skey set mistral prod
+skey run mistral prod --env MISTRAL_API_KEY -- curl -s https://api.mistral.ai/v1/models \
   -H "Authorization: Bearer $MISTRAL_API_KEY"
 ```
 
 ```sh
-senv run mistral prod --env MISTRAL_API_KEY -- python3 myscript.py
+skey run mistral prod --env MISTRAL_API_KEY -- python3 myscript.py
 ```
 
 Only allow YOUR program to trigger the key (a bouncer at the door 🧍):
 
 ```sh
-senv run mistral prod --env MISTRAL_API_KEY --allowlist curl,python3 -- curl -s https://api.mistral.ai/v1/models
+skey run mistral prod --env MISTRAL_API_KEY --allowlist curl,python3 -- curl -s https://api.mistral.ai/v1/models
 ```
 
 Wrong program? The door stays shut (exit 1, no question asked, written in the notebook).
@@ -207,63 +207,63 @@ Same 2-line shape for everything. All below are community-tested patterns: if a 
 **aider** (reads `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`):
 
 ```sh
-senv set openai prod
-senv run openai prod --env OPENAI_API_KEY -- aider --model gpt-4o
+skey set openai prod
+skey run openai prod --env OPENAI_API_KEY -- aider --model gpt-4o
 ```
 
 **cursor** (`cursor-agent`):
 
 ```sh
-senv set openai prod
-senv run openai prod --env OPENAI_API_KEY -- cursor-agent
+skey set openai prod
+skey run openai prod --env OPENAI_API_KEY -- cursor-agent
 ```
 
 **windsurf**:
 
 ```sh
-senv set openai prod
-senv run openai prod --env OPENAI_API_KEY -- windsurf
+skey set openai prod
+skey run openai prod --env OPENAI_API_KEY -- windsurf
 ```
 
 **copilot CLI** (reads `GH_TOKEN`):
 
 ```sh
-senv set github prod
-senv run github prod --env GH_TOKEN -- gh copilot suggest "list files"
+skey set github prod
+skey run github prod --env GH_TOKEN -- gh copilot suggest "list files"
 ```
 
 **gemini CLI** (reads `GEMINI_API_KEY`):
 
 ```sh
-senv set gemini prod
-senv run gemini prod --env GEMINI_API_KEY -- gemini
+skey set gemini prod
+skey run gemini prod --env GEMINI_API_KEY -- gemini
 ```
 
 **ollama** (local models need no key; point at a host instead):
 
 ```sh
-senv set ollama prod
-senv run ollama prod --env OLLAMA_HOST -- ollama list
+skey set ollama prod
+skey run ollama prod --env OLLAMA_HOST -- ollama list
 ```
 
 **Any other tool** — the universal template:
 
 ```sh
-senv set <name> <label>
-senv run <name> <label> --env <KEY_WORD> -- <any-command>
+skey set <name> <label>
+skey run <name> <label> --env <KEY_WORD> -- <any-command>
 ```
 
-> Rule of thumb: the `<KEY_WORD>` is the same word you would have put after `export`. Old way: `export FOO=secret`. Box way: `senv run name label --env FOO -- command`. Nothing to un-export. Nothing left behind.
+> Rule of thumb: the `<KEY_WORD>` is the same word you would have put after `export`. Old way: `export FOO=secret`. Box way: `skey run name label --env FOO -- command`. Nothing to un-export. Nothing left behind.
 
 ## Small extras you will like
 
 Variants by number. Picker when you forget the label:
 
 ```sh
-senv list mistral                   # 1) mistral/dev  2) mistral/prod
-senv get mistral 2                  # by number
-senv get mistral                    # picker (asks on your screen, safe even inside $(...))
-senv get mistral prod -n            # same key + newline at the end (-n/--newline)
+skey list mistral                   # 1) mistral/dev  2) mistral/prod
+skey get mistral 2                  # by number
+skey get mistral                    # picker (asks on your screen, safe even inside $(...))
+skey get mistral prod -n            # same key + newline at the end (-n/--newline)
 ```
 
 ## The notebook: who used which key? 📓
@@ -275,11 +275,11 @@ skey stats          # scoreboard: how often each key was used + who used it last
 skey log            # last 20 notebook lines, human-readable
 skey log -n 50      # last 50 lines
 skey log --json     # raw lines for agents/tools (pipe to jq)
+```
 
-After a helper session, run `senv log` and you can answer: *who used which key, how, and when?*
+After a helper session, run `skey log` and you can answer: *who used which key, how, and when?*
 
-For tests: `SENV_CONFIG_DIR=/tmp/x senv …` uses a throwaway box.
-
+For tests: `SKEY_CONFIG_DIR=/tmp/x skey …` uses a throwaway box.
 ## Honest box: what the piggy bank stops (and what it does not) 🛡️
 
 STOPS (the everyday accidents):

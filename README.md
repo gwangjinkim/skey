@@ -68,6 +68,68 @@ Swap `MY_KEY` for the word your helper reads (`MISTRAL_API_KEY`, `OPENAI_API_KEY
 1. **`get` always asks.** There is no `--yes`. On purpose. An agent/bot cannot click yes for you (prevents autonomous open-source agent exfiltration).
 2. **`run` is mittens mode.** The key goes straight into that one command's pocket, and the answer comes back with the key blacked out (`[REDACTED]`). Agents may add `-y`, but only for jobs YOU trust.
 
+## How to instruct coding agents to use `skey` 🤖
+
+When configuring coding agents (like `pi`, Claude Code, Cursor, OpenCode, Codex, or custom LLM tooling), do **not** write plaintext keys into configuration files (e.g. `auth.json`, `.pi/config.json`, or `.env`).
+
+### 1. The Cardinal Rule: Wrap the Agent Spawn, Never Embed `get`
+
+❌ **Wrong**: Putting command substitutions or naked secrets inside configs:
+```json
+// In auth.json or agent settings:
+{ "api_key": "!skey get openai prod" }  // ❌ FAILS: skey get requires an interactive /dev/tty confirm!
+```
+`skey get` deliberately requires a human keyboard confirmation on `/dev/tty` and has no `--yes` flag. If an automated agent attempts to run `skey get`, it will be blocked and denied by design.
+
+✅ **Right**: Wrap the invocation of the agent with `skey run`:
+```sh
+# Human confirms once when launching the agent session:
+skey run openai prod --env OPENAI_API_KEY -- pi
+
+# Or with Claude Code:
+skey run anthropic prod --env ANTHROPIC_API_KEY -- claude
+```
+When the agent starts, `OPENAI_API_KEY` exists only inside that process and its children. It is not saved in any dotfile, shell history, or `.env` file on disk.
+
+---
+
+### 2. Instructing Agents in System Prompts / AGENTS.md
+
+Give the agent clear instructions so it knows how to trigger sub-commands without asking for credentials:
+
+```markdown
+### Secrets & API Key Policy
+- NEVER attempt to inspect or create `.env` files, config files with credentials, or shell dotfiles (`~/.zshrc`, etc.).
+- Secrets and API keys are managed securely via `skey`.
+- You do not have direct access to plaintext API keys.
+- When you need to run commands requiring an API key (like curl, python scripts, or tests):
+  Use `skey run`:
+    `skey run <key_name> [variant] --env <ENV_VAR_NAME> -y -- <command>`
+  Example:
+    `skey run mistral prod --env MISTRAL_API_KEY -y -- curl -s https://api.mistral.ai/v1/models -H "Authorization: Bearer $MISTRAL_API_KEY"`
+- Notice: stdout and stderr are automatically redacted by `skey`. Do not attempt to de-anonymize or print the secret.
+```
+
+---
+
+### 3. Setting Up Pi Extensions & Authentications
+
+If you use `pi` (or similar harness tools):
+
+1. **Store your key in your system keychain once**:
+   ```sh
+   skey set mistral prod
+   ```
+2. **Leave `auth.json` free of hardcoded keys**: Keep your `auth.json` configured to consume standard environment variables or leave the provider key field empty.
+3. **Start pi with `skey run`**:
+   ```sh
+   skey run mistral prod --env MISTRAL_API_KEY -- pi
+   ```
+   If you are running automated scripts or headless pipelines with trusted commands, pass `-y` to skip the interactive prompt while maintaining automatic output redaction:
+   ```sh
+   skey run mistral prod --env MISTRAL_API_KEY -y -- pi
+   ```
+
 ## Honest box: is this secure? 🛡️
 
 No — it is hurdles, not a jail. It stops everyday accidents (sneaky `printenv`,
@@ -78,5 +140,5 @@ in `skey-go/RUN_THREAT_MODEL.md`.
 
 ## What next?
 
-Recipes for pi, opencode, claude, codex, omp, deepseek, antigravity, aider,
+Detailed recipes for pi, opencode, claude, codex, omp, deepseek, antigravity, aider,
 gemini, and more live here: [`skey-go/README.md`](skey-go/README.md). Start there.
