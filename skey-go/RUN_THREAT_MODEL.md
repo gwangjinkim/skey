@@ -1,4 +1,4 @@
-# `senv run` — use-without-see: pattern evaluation + threat model
+# `skey run` — use-without-see: pattern evaluation + threat model
 
 Goal: let an AI model (or script) TRIGGER use of a secret — e.g. make a
 Mistral API call — without being able to READ the plaintext. Assumes the
@@ -81,8 +81,8 @@ ptrace, no raw sockets) + human confirm per use.
 ## Rust mirror
 
 Not ported (nontrivial: process capture + redaction + keyring backends in
-one change). Spec for `senv-rs`: same argv grammar, same redaction forms,
+one change). Spec for `skey`: same argv grammar, same redaction forms,
 same confirm helper (`confirm_access` exists there — reuse it), same audit
-path (`dirs::config_dir()/senv/audit.log`), same exit passthrough. Keep
-behavior identical so `senv run` works from either binary against the shared
+path (`dirs::config_dir()/skey/audit.log`), same exit passthrough. Keep
+behavior identical so `skey run` works from either binary against the shared
 OS-keychain store.

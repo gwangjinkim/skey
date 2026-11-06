@@ -1,4 +1,4 @@
-module senv
+module github.com/gwangjinkim/skey/skey-go
 
 go 1.26.0
 

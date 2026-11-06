@@ -1,4 +1,4 @@
-// senv — minimal cross-platform secure env-value vault CLI.
+// skey — minimal cross-platform secure env-value vault CLI.
 //
 // OS-native storage only (macOS Keychain / Linux Secret Service /
 // Windows Credential Manager) via github.com/zalando/go-keyring.
@@ -7,10 +7,10 @@
 //
 // UX:
 //
-//	senv set <name> [variant]      # secure no-echo prompt, nothing in ps/history
-//	senv get <name> [variant|N] [-n]  # bare value, no trailing newline by default
-//	senv list [name] | senv ls [name]
-//	senv del <name> [variant|N]
+//	skey set <name> [variant]      # secure no-echo prompt, nothing in ps/history
+//	skey get <name> [variant|N] [-n]  # bare value, no trailing newline by default
+//	skey list [name] | skey ls [name]
+//	skey del <name> [variant|N]
 package main
 
 import (
@@ -24,33 +24,33 @@ import (
 	"golang.org/x/term"
 )
 
-const service = "senv"
+const service = "skey"
 const defaultVariant = "default"
 
 func account(name, variant string) string { return name + "/" + variant }
 
 func usage() {
-	fmt.Fprint(os.Stderr, `senv - tiny OS-keyring env vault
+	fmt.Fprint(os.Stderr, `skey - tiny OS-keyring env vault
 usage:
-  senv set <name> [variant]        store value (secure prompt, no echo)
-  senv get <name> [variant|N] [-n] print value, no newline unless -n/--newline
+  skey set <name> [variant]        store value (secure prompt, no echo)
+  skey get <name> [variant|N] [-n] print value, no newline unless -n/--newline
                                    get always asks for confirmation (no --yes bypass)
-  senv run <name> [variant] --env VAR -- <cmd> [args...]
+  skey run <name> [variant] --env VAR -- <cmd> [args...]
                                    inject secret as $VAR into child only, redact output
-  senv list [name]  (alias: ls)    list names / variants, never secrets
-  senv del <name> [variant|N]      delete variant or whole name
-  senv stats                       per-entry get/run counts + last caller
-  senv log [-n N] [--json]         recent audit trail (who ran what, exact argv)
+  skey list [name]  (alias: ls)    list names / variants, never secrets
+  skey del <name> [variant|N]      delete variant or whole name
+  skey stats                       per-entry get/run counts + last caller
+  skey log [-n N] [--json]         recent audit trail (who ran what, exact argv)
 variant: label (prod, dev, ...) or 1-based index; omitted+multiple => picker
 examples:
-  senv set mistral prod
-  MISTRAL_API_KEY=$(senv get mistral prod) pi
+  skey set mistral prod
+  MISTRAL_API_KEY=$(skey get mistral prod) pi
 `)
 }
 
 func cmdSet(args []string) int {
 	if len(args) < 1 || len(args) > 2 {
-		fmt.Fprintln(os.Stderr, "usage: senv set <name> [variant]")
+		fmt.Fprintln(os.Stderr, "usage: skey set <name> [variant]")
 		return 2
 	}
 	name, variant := args[0], defaultVariant
@@ -108,7 +108,7 @@ func confirmAccess(name, variant string) bool {
 	fmt.Fprintf(os.Stderr, "Allow access to %s/%s? [y/N]: ", name, variant)
 	line, ok := readConfirmLine()
 	if !ok {
-		fmt.Fprintln(os.Stderr, "denied (no interactive terminal; automation must use `senv run`)")
+		fmt.Fprintln(os.Stderr, "denied (no interactive terminal; automation must use `skey run`)")
 		return false
 	}
 	switch strings.ToLower(strings.TrimSpace(line)) {
@@ -147,7 +147,7 @@ func cmdGet(args []string) int {
 		case "-n", "--newline":
 			newline = true
 		case "-y", "--yes", "--no-confirm":
-			fmt.Fprintln(os.Stderr, "error: senv get has no --yes flag (always confirms; automation must use `senv run`)")
+			fmt.Fprintln(os.Stderr, "error: skey get has no --yes flag (always confirms; automation must use `skey run`)")
 			return 2
 		default:
 			rest = append(rest, a)
@@ -155,7 +155,7 @@ func cmdGet(args []string) int {
 	}
 	args = rest
 	if len(args) < 1 || len(args) > 2 {
-		fmt.Fprintln(os.Stderr, "usage: senv get <name> [variant|N] [-n]")
+		fmt.Fprintln(os.Stderr, "usage: skey get <name> [variant|N] [-n]")
 		return 2
 	}
 	name, varg := args[0], ""
@@ -187,7 +187,7 @@ func cmdGet(args []string) int {
 	}
 	val, err := keyring.Get(service, account(name, variant))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: no such entry %s/%s (hint: `senv list` / `senv set %s %s`)\n", name, variant, name, variant)
+		fmt.Fprintf(os.Stderr, "error: no such entry %s/%s (hint: `skey list` / `skey set %s %s`)\n", name, variant, name, variant)
 		recordCall("get", name, variant, "denied", "not-found", "", "", nil, nil)
 		return 1
 	}
@@ -220,7 +220,7 @@ func cmdList(args []string) int {
 		return 0
 	}
 	if len(args) > 1 {
-		fmt.Fprintln(os.Stderr, "usage: senv list [name]")
+		fmt.Fprintln(os.Stderr, "usage: skey list [name]")
 		return 2
 	}
 	names := make([]string, 0, len(ix.Names))
@@ -229,7 +229,7 @@ func cmdList(args []string) int {
 	}
 	sort.Strings(names)
 	if len(names) == 0 {
-		fmt.Fprintln(os.Stderr, "(empty — `senv set <name> [variant]` to add)")
+		fmt.Fprintln(os.Stderr, "(empty — `skey set <name> [variant]` to add)")
 		return 0
 	}
 	for _, n := range names {
@@ -242,7 +242,7 @@ func cmdList(args []string) int {
 
 func cmdDel(args []string) int {
 	if len(args) < 1 || len(args) > 2 {
-		fmt.Fprintln(os.Stderr, "usage: senv del <name> [variant|N]")
+		fmt.Fprintln(os.Stderr, "usage: skey del <name> [variant|N]")
 		return 2
 	}
 	name, varg := args[0], ""

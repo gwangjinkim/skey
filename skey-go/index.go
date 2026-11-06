@@ -20,7 +20,7 @@ var validRe = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)
 func valid(s string) bool { return validRe.MatchString(s) }
 
 func indexPath() (string, error) {
-	dir, err := senvDir()
+	dir, err := skeyDir()
 	if err != nil {
 		return "", err
 	}

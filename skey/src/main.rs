@@ -1,8 +1,8 @@
-// senv (Rust) — minimal cross-platform secure env-value vault CLI.
+// skey (Rust) — minimal cross-platform secure env-value vault CLI.
 //
 // Interop-first design: instead of a generic keyring crate, each OS backend
-// mirrors what zalando/go-keyring (the Go senv's store) does, so both tools
-// read/write the SAME entries (service `senv`, account `<name>/<variant>`):
+// mirrors what zalando/go-keyring (the Go skey's store) does, so both tools
+// read/write the SAME entries (service `skey`, account `<name>/<variant>`):
 //   macOS:   /usr/bin/security add/find/delete-generic-password, values stored
 //            as `go-keyring-base64:<b64>` (exactly like go-keyring).
 //   Linux:   Secret Service via `secret-tool` with attributes
@@ -10,13 +10,13 @@
 //   Windows: Credential Manager, TargetName `<service>:<account>`, blob = the
 //            raw UTF-8 password bytes (like danieljoos/wincred use in Go).
 // Secrets never touch the index: it holds only entry/variant *names* in the
-// same file/format as the Go version (configdir/senv/index.json).
+// same file/format as the Go version (configdir/skey/index.json).
 //
-// UX (mirrors Go senv):
-//   senv set <name> [variant]            # secure no-echo prompt
-//   senv get <name> [variant|N] [-n]     # bare value, no newline unless -n
-//   senv list [name]  (alias: ls)        # names/variants, never secrets
-//   senv del <name> [variant|N]          # delete variant or whole name
+// UX (mirrors Go skey):
+//   skey set <name> [variant]            # secure no-echo prompt
+//   skey get <name> [variant|N] [-n]     # bare value, no newline unless -n
+//   skey list [name]  (alias: ls)        # names/variants, never secrets
+//   skey del <name> [variant|N]          # delete variant or whole name
 //     (aliases: rm, delete)
 
 use std::collections::HashMap;
@@ -24,7 +24,7 @@ use std::io::{self, BufRead, IsTerminal, Write};
 
 use serde::{Deserialize, Serialize};
 
-const SERVICE: &str = "senv";
+const SERVICE: &str = "skey";
 const DEFAULT_VARIANT: &str = "default";
 
 // ---------------- secret store (per-OS, go-keyring compatible) ----------------
@@ -402,22 +402,22 @@ fn run(args: Vec<String>) -> i32 {
 
 fn usage() {
     eprint!(
-        "senv - tiny OS-keyring env vault (rust)\n\
+        "skey - tiny OS-keyring env vault (rust)\n\
          usage:\n  \
-           senv set <name> [variant]        store value (secure prompt, no echo)\n  \
-           senv get <name> [variant|N] [-n] print value, no newline unless -n/--newline\n  \
+           skey set <name> [variant]        store value (secure prompt, no echo)\n  \
+           skey get <name> [variant|N] [-n] print value, no newline unless -n/--newline\n  \
            get always asks for confirmation (no --yes bypass)\n  \
-           senv run <name> [variant] --env VAR [-y] -- <cmd> [args...]\n  \
+           skey run <name> [variant] --env VAR [-y] -- <cmd> [args...]\n  \
            inject secret as $VAR into child only, redact output\n  \
-           senv list [name]  (alias: ls)    list names / variants, never secrets\n  \
-           senv del <name> [variant|N]      delete variant or whole name\n  \
-           senv stats                       per-entry get/run counts + last caller\n  \
-           senv log [-n N] [--json]         recent audit trail (who ran what, exact argv)\n\
+           skey list [name]  (alias: ls)    list names / variants, never secrets\n  \
+           skey del <name> [variant|N]      delete variant or whole name\n  \
+           skey stats                       per-entry get/run counts + last caller\n  \
+           skey log [-n N] [--json]         recent audit trail (who ran what, exact argv)\n\
          variant: label (prod, dev, ...) or 1-based index; omitted+multiple => picker\n\
          examples:\n  \
-           senv set mistral prod\n  \
-           MISTRAL_API_KEY=$(senv get mistral prod) pi\n  \
-           senv run mistral prod --env MISTRAL_API_KEY -- curl args...\n"
+           skey set mistral prod\n  \
+           MISTRAL_API_KEY=$(skey get mistral prod) pi\n  \
+           skey run mistral prod --env MISTRAL_API_KEY -- curl args...\n"
     );
 }
 
@@ -436,21 +436,21 @@ struct Index {
     names: HashMap<String, Vec<String>>,
 }
 
-/// Config dir, honouring SENV_CONFIG_DIR for tests.
-fn senv_dir() -> io::Result<std::path::PathBuf> {
-    if let Ok(d) = std::env::var("SENV_CONFIG_DIR") {
+/// Config dir, honouring SKEY_CONFIG_DIR or SENV_CONFIG_DIR for backwards-compat/tests.
+fn skey_dir() -> io::Result<std::path::PathBuf> {
+    if let Ok(d) = std::env::var("SKEY_CONFIG_DIR").or_else(|_| std::env::var("SENV_CONFIG_DIR")) {
         if !d.is_empty() {
             return Ok(std::path::PathBuf::from(d));
         }
     }
     let dir =
         dirs::config_dir().ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "no config dir"))?;
-    Ok(dir.join("senv"))
+    Ok(dir.join("skey"))
 }
 
-/// Mirror of Go's os.UserConfigDir + senv/index.json.
+/// Mirror of Go's os.UserConfigDir + skey/index.json.
 fn index_path() -> io::Result<std::path::PathBuf> {
-    Ok(senv_dir()?.join("index.json"))
+    Ok(skey_dir()?.join("index.json"))
 }
 
 fn load_index() -> io::Result<Index> {
@@ -582,7 +582,7 @@ fn confirm_access(name: &str, variant: &str) -> bool {
     eprint!("Allow access to {name}/{variant}? [y/N]: ");
     let _ = io::stderr().flush();
     let Some(line) = read_confirm_line() else {
-        eprintln!("denied (no interactive terminal; automation must use `senv run`)");
+        eprintln!("denied (no interactive terminal; automation must use `skey run`)");
         return false;
     };
     match line.trim().to_ascii_lowercase().as_str() {
@@ -617,7 +617,7 @@ fn read_confirm_line() -> Option<String> {
 
 fn cmd_set(args: &[String]) -> i32 {
     if args.is_empty() || args.len() > 2 {
-        eprintln!("usage: senv set <name> [variant]");
+        eprintln!("usage: skey set <name> [variant]");
         return 2;
     }
     let (name, variant) = (
@@ -683,14 +683,14 @@ fn cmd_get(args: &[String]) -> i32 {
         match a.as_str() {
             "-n" | "--newline" => newline = true,
             "-y" | "--yes" | "--no-confirm" => {
-                eprintln!("error: senv get has no --yes flag (always confirms; automation must use `senv run`)");
+                eprintln!("error: skey get has no --yes flag (always confirms; automation must use `skey run`)");
                 return 2;
             }
             _ => rest.push(a),
         }
     }
     if rest.is_empty() || rest.len() > 2 {
-        eprintln!("usage: senv get <name> [variant|N] [-n]");
+        eprintln!("usage: skey get <name> [variant|N] [-n]");
         return 2;
     }
     let (name, varg) = (rest[0], rest.get(1).copied().unwrap_or(""));
@@ -733,7 +733,7 @@ fn cmd_get(args: &[String]) -> i32 {
         }
         Err(_) => {
             eprintln!(
-                "error: no such entry {name}/{variant} (hint: `senv list` / `senv set {name} {variant}`)"
+                "error: no such entry {name}/{variant} (hint: `skey list` / `skey set {name} {variant}`)"
             );
             record_call("get", name, &variant, "denied", "not-found", "", "", None, None);
             1
@@ -762,13 +762,13 @@ fn cmd_list(args: &[String]) -> i32 {
         return 0;
     }
     if args.len() > 1 {
-        eprintln!("usage: senv list [name]");
+        eprintln!("usage: skey list [name]");
         return 2;
     }
     let mut names: Vec<&String> = ix.names.keys().collect();
     names.sort();
     if names.is_empty() {
-        eprintln!("(empty — `senv set <name> [variant]` to add)");
+        eprintln!("(empty — `skey set <name> [variant]` to add)");
         return 0;
     }
     for n in names {
@@ -818,7 +818,7 @@ fn cmd_run(args: &[String]) -> i32 {
     let sep = args.iter().position(|a| a == "--");
     let Some(sep) = sep else {
         eprintln!(
-            "usage: senv run <name> [variant] --env VAR [--allowlist a,b] [--no-redact] [-y] -- <cmd> [args...]"
+            "usage: skey run <name> [variant] --env VAR [--allowlist a,b] [--no-redact] [-y] -- <cmd> [args...]"
         );
         return 2;
     };
@@ -846,7 +846,7 @@ fn cmd_run(args: &[String]) -> i32 {
     }
     let cmd_args: Vec<&str> = args[sep + 1..].iter().map(|s| s.as_str()).collect();
     if head.is_empty() || head.len() > 2 {
-        eprintln!("usage: senv run <name> [variant] --env VAR -- <cmd> [args...]");
+        eprintln!("usage: skey run <name> [variant] --env VAR -- <cmd> [args...]");
         return 2;
     }
     if cmd_args.is_empty() {
@@ -917,7 +917,7 @@ fn cmd_run(args: &[String]) -> i32 {
         Ok(v) => v,
         Err(_) => {
             eprintln!(
-                "error: no such entry {name}/{variant} (hint: `senv list` / `senv set {name} {variant}`)"
+                "error: no such entry {name}/{variant} (hint: `skey list` / `skey set {name} {variant}`)"
             );
             let base = cmd_args[0].rsplit('/').next().unwrap_or(cmd_args[0]);
             record_call("run", name, &variant, "denied", "not-found", &env_var, base, Some(redact), None);
@@ -1219,7 +1219,7 @@ fn record_call(
         redact,
         exit,
     };
-    let dir = match senv_dir() {
+    let dir = match skey_dir() {
         Ok(d) => d,
         Err(_) => return,
     };
@@ -1277,10 +1277,10 @@ fn run_audit_log(name: &str, variant: &str, env_var: &str, cmd: &str, redact: bo
 
 fn cmd_stats(args: &[String]) -> i32 {
     if !args.is_empty() {
-        eprintln!("usage: senv stats");
+        eprintln!("usage: skey stats");
         return 2;
     }
-    let dir = match senv_dir() {
+    let dir = match skey_dir() {
         Ok(d) => d,
         Err(e) => {
             eprintln!("error: {e}");
@@ -1335,13 +1335,13 @@ fn cmd_log(args: &[String]) -> i32 {
                 }
             },
             _ => {
-                eprintln!("usage: senv log [-n N|--tail N] [--json]");
+                eprintln!("usage: skey log [-n N|--tail N] [--json]");
                 return 2;
             }
         }
         i += 1;
     }
-    let dir = match senv_dir() {
+    let dir = match skey_dir() {
         Ok(d) => d,
         Err(e) => {
             eprintln!("error: {e}");
@@ -1424,7 +1424,7 @@ fn zeroize(mut s: String) {
 
 fn cmd_del(args: &[String]) -> i32 {
     if args.is_empty() || args.len() > 2 {
-        eprintln!("usage: senv del <name> [variant|N]");
+        eprintln!("usage: skey del <name> [variant|N]");
         return 2;
     }
     let (name, mut varg) = (args[0].as_str(), args.get(1).map(|s| s.as_str()).unwrap_or(""));

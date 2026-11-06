@@ -38,8 +38,11 @@ import (
 	"time"
 )
 
-// senvDir returns the config dir, honouring SENV_CONFIG_DIR for tests.
-func senvDir() (string, error) {
+// skeyDir returns the config dir, honouring SKEY_CONFIG_DIR or SENV_CONFIG_DIR for backwards compatibility/tests.
+func skeyDir() (string, error) {
+	if d := os.Getenv("SKEY_CONFIG_DIR"); d != "" {
+		return d, nil
+	}
 	if d := os.Getenv("SENV_CONFIG_DIR"); d != "" {
 		return d, nil
 	}
@@ -47,11 +50,11 @@ func senvDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(base, "senv"), nil
+	return filepath.Join(base, "skey"), nil
 }
 
 func auditPath() (string, error) {
-	d, err := senvDir()
+	d, err := skeyDir()
 	if err != nil {
 		return "", err
 	}
@@ -59,7 +62,7 @@ func auditPath() (string, error) {
 }
 
 func countsPath() (string, error) {
-	d, err := senvDir()
+	d, err := skeyDir()
 	if err != nil {
 		return "", err
 	}
@@ -200,7 +203,7 @@ func recordCall(sub, name, variant, decision, reason string, envVar, cmdBase str
 		Env: envVar, Cmd: cmdBase, Decision: decision, Reason: reason,
 		Redact: redact, Exit: exitCode,
 	}
-	dir, err := senvDir()
+	dir, err := skeyDir()
 	if err != nil {
 		return
 	}
@@ -263,7 +266,7 @@ func intPtr(i int) *int    { return &i }
 
 func cmdStats(args []string) int {
 	if len(args) > 0 {
-		fmt.Fprintln(os.Stderr, "usage: senv stats")
+		fmt.Fprintln(os.Stderr, "usage: skey stats")
 		return 2
 	}
 	p, err := countsPath()
@@ -318,7 +321,7 @@ func cmdLog(args []string) int {
 			}
 			n = v
 		default:
-			fmt.Fprintln(os.Stderr, "usage: senv log [-n N|--tail N] [--json]")
+			fmt.Fprintln(os.Stderr, "usage: skey log [-n N|--tail N] [--json]")
 			return 2
 		}
 	}

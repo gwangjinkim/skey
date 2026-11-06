@@ -71,7 +71,7 @@ func cmdRun(args []string) int {
 		}
 	}
 	if sep == -1 {
-		fmt.Fprintln(os.Stderr, "usage: senv run <name> [variant] --env VAR [--allowlist a,b] [--no-redact] [-y] -- <cmd> [args...]")
+		fmt.Fprintln(os.Stderr, "usage: skey run <name> [variant] --env VAR [--allowlist a,b] [--no-redact] [-y] -- <cmd> [args...]")
 		return 2
 	}
 	// head = args[:sep] (minus flags), cmd = args[sep+1:]
@@ -91,7 +91,7 @@ func cmdRun(args []string) int {
 	cmdArgs := args[sep+1:]
 	_ = rest
 	if len(head) < 1 || len(head) > 2 {
-		fmt.Fprintln(os.Stderr, "usage: senv run <name> [variant] --env VAR -- <cmd> [args...]")
+		fmt.Fprintln(os.Stderr, "usage: skey run <name> [variant] --env VAR -- <cmd> [args...]")
 		return 2
 	}
 	if len(cmdArgs) == 0 {
@@ -158,7 +158,7 @@ func cmdRun(args []string) int {
 	}
 	secret, err := keyring.Get(service, account(name, variant))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: no such entry %s/%s (hint: `senv list` / `senv set %s %s`)\n", name, variant, name, variant)
+		fmt.Fprintf(os.Stderr, "error: no such entry %s/%s (hint: `skey list` / `skey set %s %s`)\n", name, variant, name, variant)
 		recordCall("run", name, variant, "denied", "not-found", envVar, filepath.Base(cmdArgs[0]), boolPtr(redact), nil)
 		return 1
 	}

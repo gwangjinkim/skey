@@ -1,15 +1,15 @@
-# senv — a treasure box for your secret keys 🔒
+# skey — a treasure box for your secret keys 🔒
 
-Think of `senv` like a piggy bank for API keys.
+Think of `skey` like a piggy bank for API keys.
 
 - You drop a key in. It clicks shut.
 - Nobody can peek through the glass.
 - When a helper program needs the key, YOU open the box, just a crack, just for that one job.
 - A notebook writes down every open and close. So you can always check later.
 
-That is all `senv` does. Keys live in your computer's own safe (macOS Keychain, Linux Secret Service, Windows Credential Manager). Never in shell history. Never in `.env` files. Never shown on screen by accident.
+That is all `skey` does. Keys live in your computer's own safe (macOS Keychain, Linux Secret Service, Windows Credential Manager). Never in shell history. Never in `.env` files. Never shown on screen by accident.
 
-Two apps, same box: **Go** (`senv/`) and **Rust** (`senv-rs/`). Pick either one. They share everything.
+Two apps, same box: **Go** (`skey-go/`) and **Rust** (`skey/`). Pick either one. They share everything.
 
 > New here? Read only the next section. It takes 30 seconds.
 
@@ -18,36 +18,36 @@ Two apps, same box: **Go** (`senv/`) and **Rust** (`senv-rs/`). Pick either one.
 Copy-paste these 4 lines. That is the whole trick.
 
 ```sh
-senv set mykey prod            # 1. drop a key in the box (typing is hidden)
-senv list                      # 2. see box labels (never the keys inside)
-senv get mykey prod            # 3. peek at a key (senv ALWAYS asks first: Allow access? [y/N])
-senv run mykey prod --env MY_KEY -- env   # 4. lend a key to one command (output is auto-blacked-out)
+skey set mykey prod            # 1. drop a key in the box (typing is hidden)
+skey list                      # 2. see box labels (never the keys inside)
+skey get mykey prod            # 3. peek at a key (skey ALWAYS asks first: Allow access? [y/N])
+skey run mykey prod --env MY_KEY -- env   # 4. lend a key to one command (output is auto-blacked-out)
 ```
 
 What just happened:
 
 - `set` = put a key in the box. Give it a name (`mykey`) and a label (`prod`). Labels are free words: `prod`, `dev`, `test`.
 - `list` = read the labels on the box. Keys stay inside.
-- `get` = take a key out with your own hands. `senv` always asks `Allow access to mykey/prod? [y/N]`. There is NO skip button. On purpose. A robot cannot click "yes" for you here.
+- `get` = take a key out with your own hands. `skey` always asks `Allow access to mykey/prod? [y/N]`. There is NO skip button. On purpose. A robot cannot click "yes" for you here.
 - `run` = let ONE command borrow the key. The key goes straight into that command's pocket (`--env MY_KEY`). Nothing else can see it. The answer comes back with the key blacked out (`[REDACTED]`).
 
 Two more words you will use:
 
 ```sh
-senv del mykey dev             # throw away one label (rm works too)
-senv del mykey                 # throw away the whole name
+skey del mykey dev             # throw away one label (rm works too)
+skey del mykey                 # throw away the whole name
 ```
 
-Missing key? You get exit 1 plus a hint (`senv list` / `senv set …`).
+Missing key? You get exit 1 plus a hint (`skey list` / `skey set …`).
 
 ## The only two rules (read this once)
 
-1. **`get` always asks.** No `--yes`. No bypass. If someone tells you to run `senv get --yes`, it will fail. That is the point. Humans click yes. Robots use `run`.
+1. **`get` always asks.** No `--yes`. No bypass. If someone tells you to run `skey get --yes`, it will fail. That is the point. Humans click yes. Robots use `run`.
 2. **`run` is for robots.** It can skip the question with `-y`. It still blacks out the key in the output. Only use `-y` for jobs YOU trust.
 
 ```sh
-senv get mykey prod --yes      # ❌ always fails. By design.
-senv run mykey prod --env MY_KEY -y -- mycommand   # ✅ robots use this. Output still blacked out.
+skey get mykey prod --yes      # ❌ always fails. By design.
+skey run mykey prod --env MY_KEY -y -- mycommand   # ✅ robots use this. Output still blacked out.
 ```
 
 ## Install
@@ -55,8 +55,8 @@ senv run mykey prod --env MY_KEY -y -- mycommand   # ✅ robots use this. Output
 You need Go ≥ 1.21 **or** Rust (pick one, same box).
 
 ```sh
-cd senv && go install .              # Go -> `senv` appears on your PATH
-# or: cd senv-rs && cargo install --path .   # Rust, same box, same commands
+go install github.com/gwangjinkim/skey/skey-go@latest  # Go -> `skey` on PATH
+# or: cargo install skey                            # Rust from crates.io
 ```
 
 Extra pieces per computer: macOS needs nothing (uses built-in `/usr/bin/security`). Linux needs `secret-tool` (`apt install libsecret-tools`). Windows needs nothing.
@@ -66,8 +66,8 @@ Extra pieces per computer: macOS needs nothing (uses built-in `/usr/bin/security
 Every recipe below has the same shape. Only 2 lines:
 
 ```sh
-senv set <name> <label>                                  # line 1: put the key in the box (once)
-senv run <name> <label> --env <KEY_VAR> -- <command>     # line 2: lend it to one command
+skey set <name> <label>                                  # line 1: put the key in the box (once)
+skey run <name> <label> --env <KEY_VAR> -- <command>     # line 2: lend it to one command
 ```
 
 The key your helper needs decides the `--env` word. Pick your helper below. Copy. Paste. Done.
@@ -293,4 +293,4 @@ Full honest analysis: [`RUN_THREAT_MODEL.md`](RUN_THREAT_MODEL.md) (includes the
 
 - [`QUICKSTART.md`](QUICKSTART.md) — same 30 seconds, pocket size.
 - [`RUN_THREAT_MODEL.md`](RUN_THREAT_MODEL.md) — the honest safety analysis.
-- [`../senv-rs/README.md`](../senv-rs/README.md) — Rust twin: same box, same commands.
+- [`../skey/README.md`](../skey/README.md) — Rust twin: same box, same commands.
