@@ -428,6 +428,24 @@ fn valid(s: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || b == b'.' || b == b'_' || b == b'-')
 }
 
+/// Strip accidental wrapping when users paste keys with surrounding
+/// whitespace or matching single/double quotes. Returns the cleaned
+/// value and whether anything was removed (so `cmd_set` can inform).
+/// Only one layer of matching quotes is removed; inner content is kept
+/// verbatim, and a lone leading/trailing quote stays.
+fn sanitize_secret(s: &str) -> (String, bool) {
+    let trimmed = s.trim();
+    let changed = trimmed != s;
+    let bytes = trimmed.as_bytes();
+    if bytes.len() >= 2
+        && ((bytes[0] == b'"' && bytes[bytes.len() - 1] == b'"')
+            || (bytes[0] == b'\'' && bytes[bytes.len() - 1] == b'\''))
+    {
+        return (trimmed[1..trimmed.len() - 1].to_string(), true);
+    }
+    (trimmed.to_string(), changed)
+}
+
 // ---------- index (same path/format as Go: {"names": {name: [variants]}}) ----------
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -632,7 +650,7 @@ fn cmd_set(args: &[String]) -> i32 {
     let _ = io::stderr().flush();
     // Interactive tty: hidden prompt. Piped stdin (tests/scripts):
     // read one line so values can be fed without a tty.
-    let val = if io::stdin().is_terminal() {
+    let raw = if io::stdin().is_terminal() {
         match rpassword::read_password() {
             Ok(p) => {
                 eprintln!();
@@ -655,6 +673,10 @@ fn cmd_set(args: &[String]) -> i32 {
             Ok(_) => line.trim_end_matches(['\r', '\n']).to_string(),
         }
     };
+    let (val, trimmed) = sanitize_secret(&raw);
+    if trimmed {
+        eprintln!("note: removed surrounding whitespace/quotes before storing");
+    }
     if val.is_empty() {
         eprintln!("error: empty value, aborted");
         return 1;

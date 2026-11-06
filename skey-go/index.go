@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 // index stores only names+variant labels. Secrets live in OS keyring only.
@@ -18,6 +19,23 @@ type index struct {
 var validRe = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)
 
 func valid(s string) bool { return validRe.MatchString(s) }
+
+// sanitizeSecret strips accidental wrapping when users paste keys with
+// surrounding whitespace or matching single/double quotes. It reports
+// whether anything was removed so cmdSet can inform the user.
+// Only one layer of matching quotes is removed; inner content is kept
+// verbatim (no unescaping), and a lone leading/trailing quote stays.
+func sanitizeSecret(s string) (string, bool) {
+	trimmed := strings.TrimSpace(s)
+	changed := trimmed != s
+	s = trimmed
+	if len(s) >= 2 {
+		if (s[0] == '"' && s[len(s)-1] == '"') || (s[0] == '\'' && s[len(s)-1] == '\'') {
+			return s[1 : len(s)-1], true
+		}
+	}
+	return s, changed
+}
 
 func indexPath() (string, error) {
 	dir, err := skeyDir()

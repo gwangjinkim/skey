@@ -80,7 +80,11 @@ func cmdSet(args []string) int {
 		}
 		pw = []byte(sb.String())
 	}
-	val := strings.TrimRight(string(pw), "\r\n")
+	raw := strings.TrimRight(string(pw), "\r\n")
+	val, trimmed := sanitizeSecret(raw)
+	if trimmed {
+		fmt.Fprintln(os.Stderr, "note: removed surrounding whitespace/quotes before storing")
+	}
 	if val == "" {
 		fmt.Fprintln(os.Stderr, "error: empty value, aborted")
 		return 1
