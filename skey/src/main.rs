@@ -949,6 +949,30 @@ fn cmd_run(args: &[String]) -> i32 {
 
     // Direct exec — NO shell. Secret only in child env.
     use std::process::{Command, Stdio};
+    // TUI passthrough: with --no-redact and terminal stdio, inherit fds
+    // straight through so fullscreen apps (pi, claude, opencode TUI)
+    // see a real TTY. Redaction is skipped in this mode by request.
+    if !redact && io::stdin().is_terminal() && io::stdout().is_terminal() {
+        let status = Command::new(cmd_args[0])
+            .args(&cmd_args[1..])
+            .env(&env_var, &secret)
+            .stdin(Stdio::inherit())
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .status();
+        let code = match status {
+            Ok(s) => s.code().unwrap_or(1),
+            Err(e) => {
+                eprintln!("error: run failed: {e}");
+                run_audit_log(name, &variant, &env_var, cmd_args[0], redact, 1);
+                zeroize(secret);
+                return 1;
+            }
+        };
+        run_audit_log(name, &variant, &env_var, cmd_args[0], redact, code);
+        zeroize(secret);
+        return code;
+    }
     let out = Command::new(cmd_args[0])
         .args(&cmd_args[1..])
         .env(&env_var, &secret)

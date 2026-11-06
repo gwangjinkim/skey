@@ -11,7 +11,10 @@ import (
 	"strings"
 
 	"github.com/zalando/go-keyring"
+	"golang.org/x/term"
 )
+
+func isTerminal(f *os.File) bool { return term.IsTerminal(int(f.Fd())) }
 
 // cmdRun implements:
 //   senv run <name> [variant] --env VAR -- <cmd> [args...]
@@ -166,6 +169,26 @@ func cmdRun(args []string) int {
 	// Exec directly — NO shell, NO -c. Secret only in child env.
 	cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 	cmd.Env = append(os.Environ(), envVar+"="+secret)
+	// TUI passthrough: with --no-redact and terminal stdio, wire fds
+	// straight through so fullscreen apps (pi, claude, opencode TUI)
+	// see a real TTY. Redaction is skipped in this mode by request.
+	if !redact && isTerminal(os.Stdin) && isTerminal(os.Stdout) {
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		runErr := cmd.Run()
+		code := 0
+		if runErr != nil {
+			if ee, ok := runErr.(*exec.ExitError); ok {
+				code = ee.ExitCode()
+			} else {
+				fmt.Fprintln(os.Stderr, "error: run failed:", runErr)
+				code = 1
+			}
+		}
+		recordCall("run", name, variant, "allowed", "", envVar, filepath.Base(cmdArgs[0]), boolPtr(redact), intPtr(code))
+		return code
+	}
 	cmd.Stdin = os.Stdin
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = &outBuf
