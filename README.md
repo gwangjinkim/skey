@@ -130,13 +130,18 @@ If you use `pi` (or similar harness tools):
    skey run mistral prod --env MISTRAL_API_KEY -y -- pi
    ```
 
-4. **Midst of an ongoing project session?**
-   If you are already inside a running `pi` session without `skey`:
-   - Exit `pi` cleanly: type `/quit`
-   - Relaunch wrapped in `skey run` with `--continue` to pick up exactly where you left off without losing session history:
-     ```sh
-     skey run mistral prod --env MISTRAL_API_KEY -- pi --continue
-     ```
+4. **Midst of an ongoing project session? Switching to `skey` without losing context:**
+   If you are already inside a running coding agent session and realize your keys aren't guarded, exit cleanly and restart with the harness's resume/continue flag under `skey run`:
+
+   | Coding Agent / Harness | Clean Exit | Relaunch command with `skey` to continue session |
+   | :--- | :--- | :--- |
+   | **`pi`** | `/quit` | `skey run mistral prod --env MISTRAL_API_KEY -- pi --continue` |
+   | **`claude`** (Claude Code) | `/exit` or `Ctrl+C` | `skey run anthropic prod --env ANTHROPIC_API_KEY -- claude --resume` |
+   | **`aider`** | `/exit` or `/quit` | `skey run openai prod --env OPENAI_API_KEY -- aider --restore-chat-history` |
+   | **`opencode`** | `Ctrl+C` / `/exit` | `skey run anthropic prod --env ANTHROPIC_API_KEY -- opencode --continue` |
+   | **`codex`** / **`omp`** | `Ctrl+D` / `exit` | `skey run openai prod --env OPENAI_API_KEY -- codex --resume` |
+   | **`cursor`** / **`windsurf`** | Restart IDE window | `skey run openai prod --env OPENAI_API_KEY -- cursor .` |
+
 ## Honest box: is this secure? 🛡️
 
 No — it is hurdles, not a jail. It stops everyday accidents (sneaky `printenv`,

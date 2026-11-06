@@ -118,6 +118,8 @@ skey run openai prod --env OPENAI_API_KEY -- opencode
 ```
 
 > `opencode` can also read a config file. The box way is simpler: start it with `skey run` so it finds the key in its environment. No key files lying around.
+>
+> **Midst of an ongoing session?** Exit (`/exit` or `Ctrl+C`), then resume with `skey run anthropic prod --env ANTHROPIC_API_KEY -- opencode --continue`.
 
 ### claude code
 
@@ -129,6 +131,8 @@ skey run anthropic prod --env ANTHROPIC_API_KEY -- claude
 ```
 
 > Claude Code can also log in with a file. The box way above is simpler and leaves no key in any file. (Community-tested pattern: if your setup reads a login file, keep using the file for login and use `skey run` for the API key.)
+>
+> **Midst of an ongoing session?** Exit with `/exit`, then resume: `skey run anthropic prod --env ANTHROPIC_API_KEY -- claude --resume`.
 
 ### codex (OpenAI)
 
@@ -140,6 +144,8 @@ skey run openai prod --env OPENAI_API_KEY -- codex
 ```
 
 > Codex can also read `auth.json`. Do NOT put `skey get` inside `auth.json` (no screen to click yes on). Start Codex with `skey run` so the key arrives through the environment instead.
+>
+> **Midst of an ongoing session?** Exit, then resume: `skey run openai prod --env OPENAI_API_KEY -- codex --resume`.
 
 ### omp harness
 
@@ -212,6 +218,7 @@ Same 2-line shape for everything. All below are community-tested patterns: if a 
 skey set openai prod
 skey run openai prod --env OPENAI_API_KEY -- aider --model gpt-4o
 ```
+*Midst of an ongoing session?* Exit with `/exit`, then resume: `skey run openai prod --env OPENAI_API_KEY -- aider --restore-chat-history`.
 
 **cursor** (`cursor-agent`):
 
