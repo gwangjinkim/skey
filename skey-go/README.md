@@ -40,6 +40,19 @@ skey del mykey                 # throw away the whole name
 
 Missing key? You get exit 1 plus a hint (`skey list` / `skey set …`).
 
+### Quickstart for coding agents & harnesses
+
+Already working in an agent or starting a fresh one? Use this cheat sheet:
+
+| Coding Agent / Harness | Clean Exit (if active) | Start / Resume with `skey` |
+| :--- | :--- | :--- |
+| **`pi`** | `/quit` | `skey run mistral prod --env MISTRAL_API_KEY -- pi --continue` |
+| **`claude`** (Claude Code) | `/exit` or `Ctrl+C` | `skey run anthropic prod --env ANTHROPIC_API_KEY -- claude --resume` |
+| **`aider`** | `/exit` or `/quit` | `skey run openai prod --env OPENAI_API_KEY -- aider --restore-chat-history` |
+| **`opencode`** | `Ctrl+C` / `/exit` | `skey run anthropic prod --env ANTHROPIC_API_KEY -- opencode --continue` |
+| **`codex`** / **`omp`** | `Ctrl+D` / `exit` | `skey run openai prod --env OPENAI_API_KEY -- codex --resume` |
+| **`cursor`** / **`windsurf`** | Restart IDE window | `skey run openai prod --env OPENAI_API_KEY -- cursor .` |
+
 ## The only two rules (read this once)
 
 1. **`get` always asks.** No `--yes`. No bypass. If someone tells you to run `skey get --yes`, it will fail. That is the point. Humans click yes. Agents use `run`.
