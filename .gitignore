@@ -1,0 +1,22 @@
+# Build outputs
+target/
+dist/
+*.exe
+
+# Go
+*.test
+*.out
+
+# Rust
+**/*.rs.bk
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Python / misc (unrelated local dirs, never committed)
+__pycache__/
+.venv/
