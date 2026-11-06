@@ -73,21 +73,16 @@ senv log -n 30     # recent audit entries (--json for raw JSON Lines)
 Why/motivation, threat model, and honest limits live in the canonical doc:
 [`../senv/README.md`](../senv/README.md) (+ [`../senv/RUN_THREAT_MODEL.md`](../senv/RUN_THREAT_MODEL.md)).
 
-## pi integration
+## Agent / harness recipes
 
-```sh
-senv set mistral prod                 # hidden prompt, stored in OS keychain
-senv get mistral prod                 # always asks confirmation (interactive only)
-senv run mistral prod --env MISTRAL_API_KEY -- pi args...   # automation path: use-without-see
-```
+Copy-paste recipes for pi, opencode, claude code, codex, aider, gemini CLI,
+copilot CLI, and more live in the canonical doc:
+[`../senv/README.md`](../senv/README.md) ("Recipes" section).
+Same commands work with this binary — one shared store.
 
-`get` always confirms on /dev/tty (terminal gate, no bypass — `get --yes`
-is rejected). `-y`/`--yes`/`--no-confirm` exists only on `run` (trusted
-automation, output still redacted).
-
-Do NOT use `!senv get ...` in `pi` auth.json (no bypass by design). Wrap
-the agent in `senv run ... -- pi` or have a human pre-approve via an
-interactive `get`.
+Core rule (both binaries): `get` always confirms on /dev/tty
+(`get --yes` is rejected). `-y` exists only on `run`
+(trusted automation, output still redacted).
 
 ## Deps
 
