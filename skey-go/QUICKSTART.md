@@ -25,26 +25,26 @@ skey run mistral prod --env MISTRAL_API_KEY -- curl args...  # use-without-see (
 skey stats                          # per-entry get/run counts + last caller (also: skey log [-n N] [--json])
 ```
 
-## pi (keys stay out of env files/history)
+## Agent Harness Quickstart Table
 
-`get` is interactive-only (always confirms; `get --yes` is rejected). For
-agents/automation use the redacted path so the model never reads plaintext:
+| Coding Agent / Harness | Clean Exit (if active) | Start / Resume with `skey` |
+| :--- | :--- | :--- |
+| **`pi`** | `/quit` | `skey run mistral prod --env MISTRAL_API_KEY -- pi --continue` |
+| **`claude`** (Claude Code) | `/exit` or `Ctrl+C` | `skey run anthropic prod --env ANTHROPIC_API_KEY -- claude --resume` |
+| **`aider`** | `/exit` or `/quit` | `skey run openai prod --env OPENAI_API_KEY -- aider --restore-chat-history` |
+| **`opencode`** | `Ctrl+C` / `/exit` | `skey run anthropic prod --env ANTHROPIC_API_KEY -- opencode --continue` |
+| **`codex`** / **`omp`** | `Ctrl+D` / `exit` | `skey run openai prod --env OPENAI_API_KEY -- codex --resume` |
+| **`cursor`** / **`windsurf`** | Restart IDE window | `skey run openai prod --env OPENAI_API_KEY -- cursor .` |
 
-```sh
-senv run mistral prod --env MISTRAL_API_KEY -- pi   # human confirms once; model uses without seeing the key
-senv run mistral prod --env MISTRAL_API_KEY -y -- pi args...  # -y only here (trusted automation, output still redacted)
-```
-
-Do NOT use `!senv get ...` in `auth.json` (no tty to confirm on, and there
-is intentionally no bypass). Either have a human run the interactive `get`
-first (explicit pre-approval), or wrap the agent spawn in `senv run`.
+Do NOT put `!skey get ...` in `auth.json` (no tty to confirm on, and there
+is intentionally no bypass). Wrap the agent spawn in `skey run`.
 
 ## Cleanup
 
 ```sh
-senv del mistral dev               # one variant (label or index; rm = alias)
-senv del mistral                   # whole name (picker if ambiguous)
+skey del mistral dev               # one variant (label or index; rm = alias)
+skey del mistral                   # whole name (picker if ambiguous)
 ```
 
-Missing key -> exit 1 + hint. Index holds names only (`~/.config/senv/`).
+Missing key -> exit 1 + hint. Index holds names only (`~/.config/skey/`).
 No `--raw` flag: `get` is already raw; `-n` only adds `\n`.

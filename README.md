@@ -51,18 +51,29 @@ go install github.com/gwangjinkim/skey/skey-go@latest
 cd skey-go && go install .
 ```
 
-## The whole trick (4 lines)
-Then copy-paste:
+## Quickstart
 
+### The 4-line flow
 ```sh
 skey set mykey prod                  # 1. drop a key in (typing is hidden)
 skey list                            # 2. see labels, never keys
 skey get mykey prod                  # 3. peek — ALWAYS asks: Allow access? [y/N]
 skey run mykey prod --env MY_KEY -- pi   # 4. lend the key to one command
 ```
+Swap `MY_KEY` for the environment variable name your tool reads (`MISTRAL_API_KEY`, `OPENAI_API_KEY`, etc.).
 
-Swap `MY_KEY` for the word your helper reads (`MISTRAL_API_KEY`, `OPENAI_API_KEY`, ...).
+### Quickstart for Coding Agents & Harnesses
 
+Already working in an agent or starting a fresh one? Use this cheat sheet:
+
+| Coding Agent / Harness | Clean Exit (if active) | Start / Resume with `skey` |
+| :--- | :--- | :--- |
+| **`pi`** | `/quit` | `skey run mistral prod --env MISTRAL_API_KEY -- pi --continue` |
+| **`claude`** (Claude Code) | `/exit` or `Ctrl+C` | `skey run anthropic prod --env ANTHROPIC_API_KEY -- claude --resume` |
+| **`aider`** | `/exit` or `/quit` | `skey run openai prod --env OPENAI_API_KEY -- aider --restore-chat-history` |
+| **`opencode`** | `Ctrl+C` / `/exit` | `skey run anthropic prod --env ANTHROPIC_API_KEY -- opencode --continue` |
+| **`codex`** / **`omp`** | `Ctrl+D` / `exit` | `skey run openai prod --env OPENAI_API_KEY -- codex --resume` |
+| **`cursor`** / **`windsurf`** | Restart IDE window | `skey run openai prod --env OPENAI_API_KEY -- cursor .` |
 ## Two rules
 
 1. **`get` always asks.** There is no `--yes`. On purpose. An agent/bot cannot click yes for you (prevents autonomous open-source agent exfiltration).
@@ -130,17 +141,7 @@ If you use `pi` (or similar harness tools):
    skey run mistral prod --env MISTRAL_API_KEY -y -- pi
    ```
 
-4. **Midst of an ongoing project session? Switching to `skey` without losing context:**
-   If you are already inside a running coding agent session and realize your keys aren't guarded, exit cleanly and restart with the harness's resume/continue flag under `skey run`:
-
-   | Coding Agent / Harness | Clean Exit | Relaunch command with `skey` to continue session |
-   | :--- | :--- | :--- |
-   | **`pi`** | `/quit` | `skey run mistral prod --env MISTRAL_API_KEY -- pi --continue` |
-   | **`claude`** (Claude Code) | `/exit` or `Ctrl+C` | `skey run anthropic prod --env ANTHROPIC_API_KEY -- claude --resume` |
-   | **`aider`** | `/exit` or `/quit` | `skey run openai prod --env OPENAI_API_KEY -- aider --restore-chat-history` |
-   | **`opencode`** | `Ctrl+C` / `/exit` | `skey run anthropic prod --env ANTHROPIC_API_KEY -- opencode --continue` |
-   | **`codex`** / **`omp`** | `Ctrl+D` / `exit` | `skey run openai prod --env OPENAI_API_KEY -- codex --resume` |
-   | **`cursor`** / **`windsurf`** | Restart IDE window | `skey run openai prod --env OPENAI_API_KEY -- cursor .` |
+4. **Switching an ongoing session**: Simply exit with `/quit` and resume with `skey run ... -- pi --continue` (see the cheat sheet table in the [Quickstart](#quickstart) section above).
 
 ## Honest box: is this secure? 🛡️
 
